@@ -1,23 +1,13 @@
-use std::fs::File;
-use std::io::{Read};
 
 fn main() {
-    let mut file = File::open("inputs/1-1.txt").unwrap();
-    let mut data = String::new();
-
-    file.read_to_string(&mut data).unwrap();
-
-    let directions = data.trim().split(", ").map(|str| {
-        let direction: day1::Relative = str[0..1].parse().unwrap();
-        let distance: i64 = str[1..].parse().unwrap();
-        (direction, distance)
-    }).collect();
-
-    println!("{}", day1::taxi_abs(directions))
+    println!("Solutions are in the tests for the time being")
 }
 
 mod day1 {
     extern crate core;
+
+    use std::fs::File;
+    use std::io::{Read};
 
     use self::core::str::FromStr;
 
@@ -89,9 +79,16 @@ mod day1 {
         (north + east).abs()
     }
 
+    fn read_file(file_name: &str) -> String {
+        let mut file = File::open(file_name).unwrap();
+        let mut data = String::new();
+        file.read_to_string(&mut data).unwrap();
+        data
+    }
+
 
     #[test]
-    fn day1_taxi_abs() {
+    fn taxicab_abs_solves_the_day_1_examples() {
         assert_eq!(5, taxi_abs(vec!(
             (Relative::Right, 2),
             (Relative::Left, 3),
@@ -109,5 +106,18 @@ mod day1 {
             (Relative::Right, 5),
             (Relative::Right, 3),
         )));
+    }
+
+    #[test]
+    fn it_solves_the_day_1_puzzle() {
+        let data = read_file("inputs/1-1.txt");
+
+        let directions = data.trim().split(", ").map(|str| {
+            let direction: Relative = str[0..1].parse().unwrap();
+            let distance: i64 = str[1..].parse().unwrap();
+            (direction, distance)
+        }).collect();
+
+        assert_eq!(332, taxi_abs(directions));
     }
 }
