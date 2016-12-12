@@ -11,7 +11,7 @@ enum TaxiRotation {
     Right,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum TaxiOrientation {
     North,
     East,
@@ -53,7 +53,7 @@ impl TaxiOrientation {
     }
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 struct Taxi {
     orientation: TaxiOrientation,
     position: Position,
@@ -70,10 +70,10 @@ impl Taxi {
         Taxi {
             orientation: self.orientation,
             position: match self.orientation {
-                TaxiOrientation::North => (self.position.0 + 1, self.position.1),
-                TaxiOrientation::South => (self.position.0 - 1, self.position.1),
-                TaxiOrientation::East => (self.position.0, self.position.1 + 1),
-                TaxiOrientation::West => (self.position.0, self.position.1 - 1),
+                TaxiOrientation::North => (self.position.0, self.position.1 + 1),
+                TaxiOrientation::South => (self.position.0, self.position.1 - 1),
+                TaxiOrientation::East => (self.position.0 + 1, self.position.1),
+                TaxiOrientation::West => (self.position.0 - 1, self.position.1),
             },
         }
     }
@@ -118,24 +118,47 @@ fn read_file(file_name: &str) -> String {
     data
 }
 
-fn part_1(instructions: Vec<Instruction>) -> i64 {
+fn find_last_taxi_distance(instructions: Vec<Instruction>) -> i64 {
     taxi_abs(generate_taxi_history(instructions).last().unwrap().position)
+}
+
+fn find_first_duplicate_taxi_distance(instructions: Vec<Instruction>) -> Option<i64> {
+    let history = generate_taxi_history(instructions)
+        .into_iter()
+        .map(|taxi| taxi.position)
+        .collect::<Vec<Position>>();
+
+    history
+        .iter()
+        .filter(|position| {
+            history.iter().filter(|p| position == p).count() > 1
+        })
+        .map(|p| taxi_abs(*p))
+        .next()
+}
+
+pub fn part_1() -> i64 {
+    find_last_taxi_distance(load_instructions())
+}
+
+pub fn part_2() -> i64 {
+    find_first_duplicate_taxi_distance(load_instructions()).unwrap()
 }
 
 #[test]
 fn taxicab_abs_solves_the_part_1_examples() {
-    assert_eq!(5, part_1(vec!(
+    assert_eq!(5, find_last_taxi_distance(vec!(
         (TaxiRotation::Right, 2),
         (TaxiRotation::Left, 3),
     )));
 
-    assert_eq!(2, part_1(vec!(
+    assert_eq!(2, find_last_taxi_distance(vec!(
         (TaxiRotation::Right, 2),
         (TaxiRotation::Right, 2),
         (TaxiRotation::Right, 2),
     )));
 
-    assert_eq!(12, part_1(vec!(
+    assert_eq!(12, find_last_taxi_distance(vec!(
         (TaxiRotation::Right, 5),
         (TaxiRotation::Left, 5),
         (TaxiRotation::Right, 5),
@@ -145,5 +168,34 @@ fn taxicab_abs_solves_the_part_1_examples() {
 
 #[test]
 fn part_1_is_correct() {
-    assert_eq!(332, part_1(load_instructions()));
+    assert_eq!(332, part_1());
+}
+
+#[test]
+fn taxicab_abs_solves_the_part_2_examples() {
+    assert_eq!(4, find_first_duplicate_taxi_distance(vec!(
+        (TaxiRotation::Right, 8),
+        (TaxiRotation::Right, 4),
+        (TaxiRotation::Right, 4),
+        (TaxiRotation::Right, 8),
+    )).unwrap());
+
+    assert_eq!(0, find_first_duplicate_taxi_distance(vec!(
+        (TaxiRotation::Right, 1),
+        (TaxiRotation::Right, 1),
+        (TaxiRotation::Right, 1),
+        (TaxiRotation::Right, 1),
+    )).unwrap());
+
+    assert_eq!(2, find_first_duplicate_taxi_distance(vec!(
+        (TaxiRotation::Right, 5),
+        (TaxiRotation::Left, 5),
+        (TaxiRotation::Left, 3),
+        (TaxiRotation::Left, 7),
+    )).unwrap());
+}
+
+#[test]
+fn part_2_is_correct() {
+    assert_eq!(166, part_2());
 }
