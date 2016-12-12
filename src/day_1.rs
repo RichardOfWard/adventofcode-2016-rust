@@ -96,7 +96,7 @@ fn generate_taxi_history(instructions: Vec<Instruction>) -> Vec<Taxi> {
 }
 
 fn taxi_abs(position: Position) -> i64 {
-    (position.0 + position.1).abs()
+    position.0.abs() + position.1.abs()
 }
 
 fn load_instructions() -> Vec<Instruction> {
